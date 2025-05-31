@@ -126,12 +126,12 @@ const VaultPage = () => {
         </li>
         <li>
           <Link to={"/vault/new-note" + (folderId !== undefined ? "?folderId=" + folderId : "")}>
-            <PlusIcon /> Add
+            <PlusIcon /> Note
           </Link>
         </li>
         <li>
           <Link to={"/vault/new-folder" + (folderId !== undefined ? "?folderId=" + folderId : "")}>
-            <PlusIcon /> Add Folder
+            <PlusIcon /> Folder
           </Link>
         </li>
       </ul>

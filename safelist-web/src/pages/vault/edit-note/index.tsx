@@ -46,10 +46,11 @@ const EditNotePage = () => {
       return;
     }
     await vaultService.putNote(secretKey, {
-      id: noteId,
+      id: currentNote.id,
       name: name,
       content: content,
       passwordRequired: false,
+      folderId: currentNote.folderId,
       createdAt: currentNote.createdAt,
       updatedAt: new Date(),
       type: "note",
