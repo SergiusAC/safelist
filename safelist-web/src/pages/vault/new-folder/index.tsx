@@ -3,10 +3,10 @@ import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { getSecretKey } from "@/store/slices/vaultSlice";
-import { nanoid } from "@reduxjs/toolkit";
 import { vaultService } from "@/services/vault-service";
+import { nanoid } from "@reduxjs/toolkit";
 
-const NewNotePage = () => {
+const NewFolderPage = () => {
   const [searchParams] = useSearchParams();
 
   const secretKey = useSelector(getSecretKey);
@@ -14,7 +14,7 @@ const NewNotePage = () => {
 
   const [_, setAdding] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
-  const [content, setContent] = useState<string>("");
+  const [passwordRequired, setPasswordRequired] = useState<string>("no");
 
   const handleClickBack = () => {
     navigate(-1);
@@ -23,25 +23,20 @@ const NewNotePage = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setAdding(true);
-    try {
-      if (secretKey !== null) {
-        const nowDate = new Date();
-        const folderId = searchParams.get("folderId");
-        await vaultService.putNote(secretKey, {
-          id: nanoid(),
-          name: name,
-          content: content,
-          passwordRequired: false,
-          createdAt: nowDate,
-          updatedAt: nowDate,
-          folderId: folderId !== null ? folderId : undefined,
-          type: "note",
-        });
-      }
-      navigate(-1);
-    } catch (err) {
-      console.error("failed to create a note", err);
+    if (secretKey !== null) {
+      const nowDate = new Date();
+      const folderId = searchParams.get("folderId");
+      await vaultService.putFolder(secretKey, {
+        id: nanoid(),
+        name: name,
+        passwordRequired: passwordRequired == "yes",
+        createdAt: nowDate,
+        updatedAt: nowDate,
+        parentFolderId: folderId !== null ? folderId : undefined,
+        type: "folder",
+      });
     }
+    navigate(-1);
     setAdding(false);
   }
 
@@ -55,7 +50,7 @@ const NewNotePage = () => {
         </div>
       </div>
       <div className="navbar-center">
-        <a className="btn btn-ghost text-xl">New Note</a>
+        <a className="btn btn-ghost text-xl">New Folder</a>
       </div>
       <div className="navbar-end">
       </div>
@@ -63,7 +58,7 @@ const NewNotePage = () => {
     <div className="ml-4 mr-4">
       <form onSubmit={handleSubmit}>
         <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend text-sm">Name</legend>
+          <legend className="fieldset-legend text-sm">Folder name</legend>
           <input 
             value={name}
             onChange={e => setName(e.target.value)}
@@ -75,14 +70,11 @@ const NewNotePage = () => {
         </fieldset>
 
         <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend text-sm">Content</legend>
-          <textarea 
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            required
-            className="textarea textarea-bordered h-48 w-full"
-            placeholder="Input content...">
-          </textarea>
+          <legend className="fieldset-legend text-sm">Password required</legend>
+          <select value={passwordRequired} onChange={e => setPasswordRequired(e.target.value)} className="select w-full">
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
         </fieldset>
 
         <div className="flex">
@@ -100,4 +92,4 @@ const NewNotePage = () => {
   </>
 }
 
-export default NewNotePage;
+export default NewFolderPage;

@@ -1,4 +1,4 @@
-import { VaultService } from "@/services/vault-service";
+import { localStorageService } from "@/storage/local-storage/localStorageService";
 import { triggerUpdate, updateSecretKey } from "@/store/slices/vaultSlice";
 import { arrayBufferToBase64, deriveSecretKey, digestAsBase64, exportKey, generateSalt } from "@/utils/cryptoUtils";
 import { useState } from "react";
@@ -7,8 +7,8 @@ import { useNavigate } from "react-router-dom";
 
 const LocalLoginPage = () => {
   const [masterPassword, setMasterPassword] = useState<string>("");
-  const storedSecretKeyDigest = useSelector(() => VaultService.getSecretKeyDigestBase64());
-  const storedSalt = useSelector(() => VaultService.getSalt());
+  const storedSecretKeyDigest = useSelector(() => localStorageService.getSecretKeyDigestBase64());
+  const storedSalt = useSelector(() => localStorageService.getSecretKeySalt());
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -23,10 +23,10 @@ const LocalLoginPage = () => {
       alert("Incorrect master password");
       return;
     }
-    VaultService.updateSalt(arrayBufferToBase64(salt));
-    VaultService.updateSecretKeyDigest(secretKeyHash)
+    localStorageService.setSecretKeySalt(arrayBufferToBase64(salt));
+    localStorageService.setSecretKeyDigest(secretKeyHash)
     dispatch(updateSecretKey(secretKey));
-    dispatch(triggerUpdate())
+    dispatch(triggerUpdate());
     navigate("/vault", { flushSync: true });
   }
 

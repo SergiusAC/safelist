@@ -1,103 +1,157 @@
-import { base64ToArrayBuffer, decryptText, encryptText } from "@/utils/cryptoUtils";
-import type { VaultNoteType, VaultType } from "./types";
-import type { EncryptionResult } from "@/utils/types";
+import { decryptText, encryptText } from "@/utils/cryptoUtils";
+import type { VaultFolderT, VaultNoteT } from "./types";
+import { dexieService } from "@/storage/indexed-db/dexieService";
 
-export class VaultService {
-  
-  static VAULT_KEY = "vault";
-  static SALT_KEY = "vaultSalt";
-  static SECRET_KEY_DIGEST_KEY = "secretKeyDigest";
+/**
+ * Service to manage vault data.
+ */
+export const vaultService = {
 
-  /**
-   * Get vault from the local storage, decrypt it and return.
-   * 
-   * @param key secret key for decryption.
-   * @returns vault.
-   */
-  static async loadVault(key: CryptoKey): Promise<VaultType | null> {
-    const vaultStr = localStorage.getItem(this.VAULT_KEY);
-    if (!vaultStr) {
-      return null;
+  async getAllNotes(key: CryptoKey): Promise<VaultNoteT[]> {
+    const notesEntity = await dexieService.getNotesEntity();
+    if (!notesEntity) {
+      return [];
     }
-    const vault: EncryptionResult = JSON.parse(vaultStr);
-    const vaultDecryptedString = await decryptText(key, vault.ciphertext, vault.iv);
-    return JSON.parse(vaultDecryptedString);
-  }
+    const notesJsonString = await decryptText(key, notesEntity.ciphertext, notesEntity.iv);
+    return JSON.parse(notesJsonString);
+  },
 
-  static getEncryptedVault(): EncryptionResult | null {
-    const vault = localStorage.getItem(this.VAULT_KEY);
-    if (!vault) {
-      return null;
+  async getRootNotes(key: CryptoKey): Promise<VaultNoteT[]> {
+    const allNotes = await this.getAllNotes(key);
+    return allNotes.filter(iterNote => iterNote.folderId === undefined || iterNote.folderId === null);
+  },
+
+  async getNotesByFolderId(key: CryptoKey, folderId: string): Promise<VaultNoteT[]> {
+    const allNotes = await this.getAllNotes(key);
+    return allNotes.filter(iterNote => iterNote.folderId === folderId);
+  },
+
+  async getNoteById(key: CryptoKey, noteId: string): Promise<VaultNoteT | undefined> {
+    const notes = await this.getAllNotes(key);
+    if (notes.length === 0) {
+      return undefined;
     }
-    return JSON.parse(vault);
-  }
+    return notes.find(iterNote => iterNote.id === noteId);
+  },
 
-  static async updateVault(key: CryptoKey, item: VaultNoteType) {
-    const vault = await this.loadVault(key);
-    if (vault === null) {
-      const newVault: VaultType = {
-        notes: [item],
+  async getAllFolders(key: CryptoKey): Promise<VaultFolderT[]> {
+    const foldersEntity = await dexieService.getFoldersEntity();
+    if (!foldersEntity) {
+      return [];
+    }
+    const foldersJsonString = await decryptText(key, foldersEntity.ciphertext, foldersEntity.iv);
+    return JSON.parse(foldersJsonString);
+  },
+
+  async getFolders(key: CryptoKey, parentFolderId?: string): Promise<VaultFolderT[]> {
+    const foldersEntity = await dexieService.getFoldersEntity();
+    if (!foldersEntity) {
+      return [];
+    }
+    const foldersJsonString = await decryptText(key, foldersEntity.ciphertext, foldersEntity.iv);
+    const folders: VaultFolderT[] = JSON.parse(foldersJsonString);
+    if (parentFolderId !== undefined) {
+      return folders.filter(iterFolder => iterFolder.parentFolderId === parentFolderId);
+    }
+    return folders.filter(iterFolder => iterFolder.parentFolderId === undefined || iterFolder.parentFolderId === null);
+  },
+
+  async getFolderById(key: CryptoKey, folderId: string): Promise<VaultFolderT | undefined> {
+    const allFolders = await this.getAllFolders(key);
+    return allFolders.find(iterFolder => iterFolder.id === folderId);
+  },
+
+  async pwd(key: CryptoKey, folderId?: string): Promise<VaultFolderT[]> {
+    if (folderId === undefined) {
+      return [];
+    }
+    const result = [];
+    const allFolders = await this.getAllFolders(key);
+    let _folderId: string | undefined = folderId;
+    while (_folderId !== undefined) {
+      const foundFolder = allFolders.find(iterFolder => iterFolder.id === _folderId);
+      if (foundFolder !== undefined) {
+        result.push(foundFolder);
       }
-      this._persistVault(key, newVault);
+      _folderId = foundFolder?.parentFolderId;
+    }
+    return result.reverse();
+  },
+
+  async putNote(key: CryptoKey, note: VaultNoteT) {
+    const notes = await this.getAllNotes(key);
+    const idx = notes.findIndex(iterNote => iterNote.id === note.id);
+    if (idx >= 0) {
+      notes[idx] = note;
     } else {
-      const currentSecretIdx = vault.notes.findIndex(note => note.id === item.id);
-      if (currentSecretIdx > -1 ) {
-        vault.notes[currentSecretIdx] = item;
-      } else {
-        vault.notes.push(item);
-      }
-      this._persistVault(key, vault);
+      notes.push(note);
     }
-  }
+    await this._persist(key, notes, "notes");
+  },
 
-  static async deleteNote(key: CryptoKey, noteId: string) {
-    const vault = await this.loadVault(key);
-    if (!vault) {
+  async deleteNoteById(key: CryptoKey, noteId: string) {
+    const notes = await this.getAllNotes(key);
+    if (notes.length === 0) {
       return;
     }
-    const idx = vault.notes.findIndex(note => note.id === noteId);
+    const idx = notes.findIndex(iterNote => iterNote.id === noteId);
     if (idx >= 0) {
-      vault.notes.splice(idx, 1);
+      notes.splice(idx, 1);
     }
-    this._persistVault(key, vault);
-  }
+    await this._persist(key, notes, "notes");
+  },
 
-  static findNoteById(vault: VaultType, noteId: string): VaultNoteType | undefined {
-    return vault.notes.find(note => note.id === noteId);
-  }
-
-  static updateSalt(salt: string) {
-    localStorage.setItem(this.SALT_KEY, salt);
-  }
-
-  static getSalt(): ArrayBuffer | null {
-    return this._getFromLocalStorageWithBase64Decode(this.SALT_KEY);
-  }
-
-  static getSaltBase64(): string | null {
-    return localStorage.getItem(this.SALT_KEY);
-  }
-
-  static updateSecretKeyDigest(digest: string) {
-    localStorage.setItem(this.SECRET_KEY_DIGEST_KEY, digest);
-  }
-
-  static getSecretKeyDigestBase64(): string | null {
-    return localStorage.getItem(this.SECRET_KEY_DIGEST_KEY)
-  }
-
-  private static _getFromLocalStorageWithBase64Decode(key: string) {
-        const vaultSalt = localStorage.getItem(key);
-    if (!vaultSalt) {
-      return null;
+  async putFolder(key: CryptoKey, folder: VaultFolderT) {
+    const folders = await this.getAllFolders(key);
+    const idx = folders.findIndex(iterFolder => iterFolder.id === folder.id);
+    if (idx >= 0) {
+      folders[idx] = folder;
+    } else {
+      folders.push(folder);
     }
-    return base64ToArrayBuffer(vaultSalt);
-  }
+    await this._persist(key, folders, "folders");
+  },
 
-  private static async _persistVault(key: CryptoKey, vault: VaultType) {
-    const updatedVaultString = JSON.stringify(vault);
-    const encryptedVault = await encryptText(key, updatedVaultString);
-    localStorage.setItem(this.VAULT_KEY, JSON.stringify(encryptedVault));
+  async deleteFolder(key: CryptoKey, folderId: string | undefined) {
+    if (folderId === undefined) {
+      return;
+    }
+    const folders = await this.getAllFolders(key);
+    const idx = folders.findIndex(iterFolder => iterFolder.id === folderId);
+    if (idx >= 0) {
+      folders.splice(idx, 1);
+    }
+    await this._persist(key, folders, "folders");
+    const notes = await this.getNotesByFolderId(key, folderId);
+    if (notes.length > 0) {
+      for (const note of notes) {
+        await this.deleteNoteById(key, note.id);
+      }
+    }
+    const childFolders = await this.getFolders(key, folderId);
+    if (childFolders.length > 0) {
+      for (const childFolder of childFolders) {
+        await this.deleteFolder(key, childFolder.id);
+      }
+    }
+  },
+
+  async _persist(key: CryptoKey, items: VaultNoteT[] | VaultFolderT[], itemType: "notes" | "folders") {
+    const itemsJson = JSON.stringify(items);
+    const itemsCiphered = await encryptText(key, itemsJson);
+    if (itemType === "notes") {
+      await dexieService.putNotesEntity({
+        id: "notes", 
+        ciphertext: itemsCiphered.ciphertext, 
+        iv: itemsCiphered.iv
+      });
+    } else if (itemType == "folders") {
+      await dexieService.putFoldersEntity({
+        id: "folders", 
+        ciphertext: itemsCiphered.ciphertext, 
+        iv: itemsCiphered.iv
+      });
+    }
   }
 
 }

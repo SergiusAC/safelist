@@ -1,6 +1,7 @@
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import { SecurityService } from "@/services/security-service";
-import { VaultService } from "@/services/vault-service";
+import { dexieService } from "@/storage/indexed-db/dexieService";
+import { localStorageService } from "@/storage/local-storage/localStorageService";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,12 +21,12 @@ const ExportPage = () => {
       alert("Confirm master password");
       return;
     }
-    const salt = VaultService.getSalt();
+    const salt = await localStorageService.getSecretKeySalt();
     if (!salt) {
       alert("Salt is empty");
       return;
     }
-    const secretKeyDigest = VaultService.getSecretKeyDigestBase64();
+    const secretKeyDigest = await localStorageService.getSecretKeyDigestBase64();
     if (!secretKeyDigest) {
       alert("Secret key digest is empty");
       return;
@@ -36,11 +37,13 @@ const ExportPage = () => {
       return;
     }
     if (exportMode === "encrypted") {
-      const vaultEncrypted = VaultService.getEncryptedVault();
-      const saltBase64 = VaultService.getSaltBase64();
+      const saltBase64 = await localStorageService.getSecretKeySaltBase64();
+      const notes = await dexieService.getNotesEntity();
+      const folders = await dexieService.getFoldersEntity();
       const exportObject = {
         "mode": exportMode,
-        "vault": vaultEncrypted,
+        "notes": notes,
+        "folders": folders,
         "salt": saltBase64,
         "secretKeyDigest": secretKeyDigest
       }

@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import LeftArrowIcon from "../../../icons/LeftArrowIcon";
 import { getSecretKey, getUpdateTrigger } from "../../../store/slices/vaultSlice";
-import { VaultService } from "@/services/vault-service";
+import { vaultService } from "@/services/vault-service";
+import type { VaultNoteT } from "@/services/vault-service/types";
 
 const EditNotePage = () => {
   const vaultUpdates = useSelector(getUpdateTrigger);
@@ -13,6 +14,7 @@ const EditNotePage = () => {
   const { noteId } = useParams<{noteId: string}>();
 
   const [_, setAdding] = useState<boolean>(false);
+  const [currentNote, setCurrentNote] = useState<VaultNoteT>();
   const [name, setName] = useState<string>("");
   const [content, setContent] = useState<string>("");
 
@@ -21,12 +23,12 @@ const EditNotePage = () => {
       if (secretKey === null) {
         return;
       }
-      const vault = await VaultService.loadVault(secretKey);
-      if (noteId && vault && vault.notes) {
-        const foundSecret = VaultService.findNoteById(vault, noteId);
-        if (foundSecret) {
-          setName(foundSecret.name);
-          setContent(foundSecret.content);
+      if (noteId) {
+        const foundNote = await vaultService.getNoteById(secretKey, noteId);
+        if (foundNote) {
+          setCurrentNote(foundNote);
+          setName(foundNote.name);
+          setContent(foundNote.content ?? "");
         }
       }
     }
@@ -39,17 +41,20 @@ const EditNotePage = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log("run into handleSubmit")
     setAdding(true);
-    if (!secretKey || !noteId) {
+    if (!secretKey || !noteId || !currentNote) {
       return;
     }
-    await VaultService.updateVault(secretKey, {
+    await vaultService.putNote(secretKey, {
       id: noteId,
       name: name,
-      content: content
+      content: content,
+      passwordRequired: false,
+      createdAt: currentNote.createdAt,
+      updatedAt: new Date(),
+      type: "note",
     })
-    navigate("/vault");
+    navigate(-1);
     setAdding(false);
   }
 
@@ -59,8 +64,8 @@ const EditNotePage = () => {
     }
     const answer = confirm("Do you want to delete the note \"" + name + "\"");
     if (answer === true) {
-      await VaultService.deleteNote(secretKey, noteId);
-      navigate("/vault");
+      await vaultService.deleteNoteById(secretKey, noteId);
+      navigate(-1);
     }
   }
 
