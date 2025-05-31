@@ -1,7 +1,9 @@
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import { SecurityService } from "@/services/security-service";
+import { vaultService } from "@/services/vault-service";
 import { dexieService } from "@/storage/indexed-db/dexieService";
 import { localStorageService } from "@/storage/local-storage/localStorageService";
+import { deriveSecretKey } from "@/utils/cryptoUtils";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -40,22 +42,44 @@ const ExportPage = () => {
       const saltBase64 = await localStorageService.getSecretKeySaltBase64();
       const notes = await dexieService.getNotesEntity();
       const folders = await dexieService.getFoldersEntity();
-      const exportObject = {
-        "mode": exportMode,
-        "notes": notes,
-        "folders": folders,
-        "salt": saltBase64,
-        "secretKeyDigest": secretKeyDigest
-      }
-      const exportObjectJson = JSON.stringify(exportObject, null, 2);
-      const blob = new Blob([exportObjectJson], {type: 'text/plain'});
-      const elem = window.document.createElement('a');
-      elem.href = window.URL.createObjectURL(blob);
-      elem.download = "vault-" + new Date().getTime() + ".json";        
-      document.body.appendChild(elem);
-      elem.click();        
-      document.body.removeChild(elem);
+      _download(
+        "vault-" + new Date().getTime() + ".json", 
+        notes, 
+        folders, 
+        saltBase64!, 
+        secretKeyDigest
+      );
+    } else if (exportMode === "decrypted") {
+      const secretKey = await deriveSecretKey(masterPassword, salt);
+      const notes = await vaultService.getAllNotes(secretKey);
+      const folders = await vaultService.getAllFolders(secretKey);
+      const saltBase64 = await localStorageService.getSecretKeySaltBase64();
+      _download(
+        "vault-decrypted-" + new Date().getTime() + ".json", 
+        notes, 
+        folders, 
+        saltBase64!, 
+        secretKeyDigest
+      );
     }
+  }
+
+  const _download = (filename: string, notes: any, folders: any, salt: string, secretKeyDigest: string) => {
+    const exportObject = {
+      "mode": exportMode,
+      "notes": notes,
+      "folders": folders,
+      "salt": salt,
+      "secretKeyDigest": secretKeyDigest
+    }
+    const exportObjectJson = JSON.stringify(exportObject, null, 2);
+    const blob = new Blob([exportObjectJson], {type: 'text/plain'});
+    const elem = window.document.createElement('a');
+    elem.href = window.URL.createObjectURL(blob);
+    elem.download = filename;        
+    document.body.appendChild(elem);
+    elem.click();        
+    document.body.removeChild(elem);
   }
 
   return <>
