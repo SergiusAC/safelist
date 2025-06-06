@@ -1,4 +1,4 @@
-import { decryptText, encryptText } from "@/utils/cryptoUtils";
+import { cryptoUtils } from "@/utils/cryptoUtils";
 import type { VaultFolderT, VaultNoteT } from "./types";
 import { dexieService } from "@/storage/indexed-db/dexieService";
 
@@ -12,7 +12,7 @@ export const vaultService = {
     if (!notesEntity) {
       return [];
     }
-    const notesJsonString = await decryptText(key, notesEntity.ciphertext, notesEntity.iv);
+    const notesJsonString = await cryptoUtils.decryptText(key, notesEntity.ciphertext, notesEntity.iv);
     return JSON.parse(notesJsonString);
   },
 
@@ -39,7 +39,7 @@ export const vaultService = {
     if (!foldersEntity) {
       return [];
     }
-    const foldersJsonString = await decryptText(key, foldersEntity.ciphertext, foldersEntity.iv);
+    const foldersJsonString = await cryptoUtils.decryptText(key, foldersEntity.ciphertext, foldersEntity.iv);
     return JSON.parse(foldersJsonString);
   },
 
@@ -48,7 +48,7 @@ export const vaultService = {
     if (!foldersEntity) {
       return [];
     }
-    const foldersJsonString = await decryptText(key, foldersEntity.ciphertext, foldersEntity.iv);
+    const foldersJsonString = await cryptoUtils.decryptText(key, foldersEntity.ciphertext, foldersEntity.iv);
     const folders: VaultFolderT[] = JSON.parse(foldersJsonString);
     if (parentFolderId !== undefined) {
       return folders.filter(iterFolder => iterFolder.parentFolderId === parentFolderId);
@@ -138,7 +138,7 @@ export const vaultService = {
 
   async _persist(key: CryptoKey, items: VaultNoteT[] | VaultFolderT[], itemType: "notes" | "folders") {
     const itemsJson = JSON.stringify(items);
-    const itemsCiphered = await encryptText(key, itemsJson);
+    const itemsCiphered = await cryptoUtils.encryptText(key, itemsJson);
     if (itemType === "notes") {
       await dexieService.putNotesEntity({
         id: "notes", 

@@ -10,6 +10,7 @@ import { vaultService } from "@/services/vault-service";
 import type { VaultFolderT, VaultNoteT } from "@/services/vault-service/types";
 import EditIcon from "@/icons/EditIcon";
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
+import ThreeDotsIcon from "@/icons/ThreeDotsIcon";
 
 const VaultPage = () => {
   const { folderId } = useParams<{folderId: string}>();
@@ -36,11 +37,8 @@ const VaultPage = () => {
   }
 
   useEffect(() => {
-    console.log("folderId=", folderId)
     const syncVault = async () => {
       if (secretKey !== null) {
-        const allFolders = await vaultService.getAllFolders(secretKey);
-        console.log("allFolders = ", allFolders);
         if (folderId === undefined) {
           setCurrentFolder(undefined);
           const _notes = await vaultService.getRootNotes(secretKey);
@@ -118,22 +116,35 @@ const VaultPage = () => {
       </div>
     </div>
     <div className="ml-2 mr-2">
-      <ul className="menu menu-horizontal bg-base-200 rounded-box w-full mb-2">
-        <li>
-          <Link to="/export">
-            <FileDownloadIcon /> Export
-          </Link>
-        </li>
-        <li>
-          <Link to={"/vault/new-note" + (folderId !== undefined ? "?folderId=" + folderId : "")}>
-            <PlusIcon /> Note
-          </Link>
-        </li>
-        <li>
-          <Link to={"/vault/new-folder" + (folderId !== undefined ? "?folderId=" + folderId : "")}>
-            <PlusIcon /> Folder
-          </Link>
-        </li>
+      <ul className="flex bg-base-200 rounded-box w-full justify-between mb-2">
+        <div className="flex">
+          <ul className="menu menu-horizontal">
+            <li>
+              <Link to={"/vault/new-note" + (folderId !== undefined ? "?folderId=" + folderId : "")}>
+                <PlusIcon /> Note
+              </Link>
+            </li>
+            <li>
+              <Link to={"/vault/new-folder" + (folderId !== undefined ? "?folderId=" + folderId : "")}>
+                <PlusIcon /> Folder
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div className="flex">
+          <ul className="menu menu-horizontal">
+            <li>
+              <details open={false}>
+                <summary><ThreeDotsIcon /></summary>
+                <ul className="right-2 z-1 w-40">
+                  <li><Link to="/export">Export</Link></li>
+                  <li><Link to="/import">Import</Link></li>
+                  <li><Link to="/sync">Sync</Link></li>
+                </ul>
+              </details>
+            </li>
+          </ul>
+        </div>
       </ul>
       {renderBreadcrumbs()}
       <ul className="menu menu-md bg-base-200 rounded-box w-full">

@@ -1,4 +1,4 @@
-import { base64ToArrayBuffer } from "@/utils/cryptoUtils";
+import { cryptoUtils } from "@/utils/cryptoUtils";
 
 export const VAULT_VERSION_KEY = "vault_version";
 export const SECRET_KEY_SALT = "secret_key_salt";
@@ -39,7 +39,7 @@ export const localStorageService = {
     if (!vaultSalt) {
       return null;
     }
-    return base64ToArrayBuffer(vaultSalt);
+    return cryptoUtils.base64ToArrayBuffer(vaultSalt);
   },
 
 }

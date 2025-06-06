@@ -8,6 +8,7 @@ import ExportPage from "./export";
 import NewFolderPage from "./vault/new-folder";
 import HomePage from "./home";
 import EditFolderPage from "./vault/edit-folder";
+import ImportPage from "./import";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
       {
         path: "/export",
         element: <ExportPage />
+      },
+      {
+        path: "/import",
+        element: <ImportPage />
       },
     ],
   }

@@ -1,6 +1,6 @@
 import { localStorageService } from "@/storage/local-storage/localStorageService";
 import { triggerUpdate, updateSecretKey } from "@/store/slices/vaultSlice";
-import { arrayBufferToBase64, deriveSecretKey, digestAsBase64, exportKey, generateSalt } from "@/utils/cryptoUtils";
+import { cryptoUtils } from "@/utils/cryptoUtils";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -14,16 +14,16 @@ const LocalLoginPage = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const salt = storedSalt !== null ? storedSalt : generateSalt();
-    const secretKey = await deriveSecretKey(masterPassword, salt);
-    const secretKeyExported = await exportKey(secretKey);
-    const secretKeyHash = await digestAsBase64(secretKeyExported);
+    const salt = storedSalt !== null ? storedSalt : cryptoUtils.generateSalt();
+    const secretKey = await cryptoUtils.deriveSecretKey(masterPassword, salt);
+    const secretKeyExported = await cryptoUtils.exportKey(secretKey);
+    const secretKeyHash = await cryptoUtils.digestAsBase64(secretKeyExported);
     if (storedSecretKeyDigest && storedSecretKeyDigest !== secretKeyHash) {
       console.log(storedSecretKeyDigest, secretKeyHash)
       alert("Incorrect master password");
       return;
     }
-    localStorageService.setSecretKeySalt(arrayBufferToBase64(salt));
+    localStorageService.setSecretKeySalt(cryptoUtils.arrayBufferToBase64(salt));
     localStorageService.setSecretKeyDigest(secretKeyHash)
     dispatch(updateSecretKey(secretKey));
     dispatch(triggerUpdate());

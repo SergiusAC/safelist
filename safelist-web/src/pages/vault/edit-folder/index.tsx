@@ -105,7 +105,7 @@ const EditFolderPage = () => {
 
         <div className="flex">
           <div className="flex-1 px-1">
-            <button className="btn btn-soft mt-5 w-full" onClick={handleClickBack}>Close</button>
+            <button className="btn btn-soft mt-5 w-full" type="button" onClick={handleClickBack}>Close</button>
           </div>
           <div className="flex-1 px-1">
             <button className="btn btn-soft btn-primary mt-5 w-full" type="submit">Update</button>
