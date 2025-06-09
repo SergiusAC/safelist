@@ -31,6 +31,27 @@ export const exportService = {
       }
       ioUtils.downloadBlob(downloadObj, "vault-decrypted-" + new Date().getTime() + ".json");
     }
+  },
+
+  async getEncryptedVault() {
+    const salt = localStorageService.getSecretKeySaltBase64();
+    const secretKeyDigest = localStorageService.getSecretKeyDigestBase64();
+    if (salt === null || secretKeyDigest === null) {
+      throw new Error("salt or secretKeyDigest are null");
+    }
+    const notes = await dexieService.getNotesEntity();
+    const folders = await dexieService.getFoldersEntity();
+    if (notes === undefined || folders === undefined) {
+      throw new Error("notes or folders are undefined");
+    }
+    const result: EncryptedVaultExportType = {
+      mode: "encrypted",
+      notes: notes,
+      folders: folders,
+      salt: salt,
+      secretKeyDigest: secretKeyDigest
+    }
+    return result;
   }
 
 }

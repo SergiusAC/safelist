@@ -75,6 +75,11 @@ export const cryptoUtils = {
     return await crypto.subtle.exportKey('raw', key);
   },
 
+  async digestAsBase64(message: ArrayBuffer | DataView): Promise<string> {
+    const digest = await crypto.subtle.digest("SHA-512", message);
+    return this.arrayBufferToBase64(digest);
+  },
+
   generateSalt(): ArrayBuffer {
     return crypto.getRandomValues(new Uint8Array(16));
   },
@@ -82,11 +87,6 @@ export const cryptoUtils = {
   generateSaltAsBase64(): string {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     return btoa(String.fromCharCode(...salt));
-  },
-
-  async digestAsBase64(message: ArrayBuffer | DataView): Promise<string> {
-    const digest = await crypto.subtle.digest("SHA-512", message);
-    return this.arrayBufferToBase64(digest);
   },
 
   arrayBufferToBase64(arr: ArrayBuffer): string {

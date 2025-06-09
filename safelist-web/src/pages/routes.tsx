@@ -9,6 +9,9 @@ import NewFolderPage from "./vault/new-folder";
 import HomePage from "./home";
 import EditFolderPage from "./vault/edit-folder";
 import ImportPage from "./import";
+import SyncPage from "./sync";
+import YandexSyncPage from "./sync/yandex-sync";
+import YandexTokenPage from "./sync/yandex-token";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +57,18 @@ export const router = createBrowserRouter([
       {
         path: "/import",
         element: <ImportPage />
+      },
+      {
+        path: "/sync",
+        element: <SyncPage />
+      },
+      {
+        path: "/sync/yandex-disk",
+        element: <YandexSyncPage />
+      },
+      {
+        path: "/sync/yandex-token",
+        element: <YandexTokenPage />
       },
     ],
   }

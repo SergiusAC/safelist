@@ -1,14 +1,15 @@
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import { vaultService } from "@/services/vault-service";
 import type { VaultFolderT } from "@/services/vault-service/types";
-import { getSecretKey } from "@/store/slices/vaultSlice";
+import { getSecretKey, triggerUpdate } from "@/store/slices/vaultSlice";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
 const EditFolderPage = () => {
   const { folderId } = useParams<{folderId: string}>();
   const secretKey = useSelector(getSecretKey);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [currentFolder, setCurrentFolder] = useState<VaultFolderT>();
   const [name, setName] = useState<string>("");
@@ -51,6 +52,7 @@ const EditFolderPage = () => {
         parentFolderId: currentFolder.parentFolderId,
         type: "folder",
       });
+      dispatch(triggerUpdate());
     }
     navigate(-1);
   };
@@ -62,6 +64,7 @@ const EditFolderPage = () => {
     const answer = confirm("Do you want to delete the folder \"" + name + "\"");
     if (answer === true) {
       await vaultService.deleteFolder(secretKey, folderId);
+      dispatch(triggerUpdate());
       navigate(-1);
     }
   }

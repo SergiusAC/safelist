@@ -1,8 +1,8 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { getSecretKey } from "@/store/slices/vaultSlice";
+import { getSecretKey, triggerUpdate } from "@/store/slices/vaultSlice";
 import { nanoid } from "@reduxjs/toolkit";
 import { vaultService } from "@/services/vault-service";
 
@@ -10,6 +10,7 @@ const NewNotePage = () => {
   const [searchParams] = useSearchParams();
 
   const secretKey = useSelector(getSecretKey);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [_, setAdding] = useState<boolean>(false);
@@ -37,6 +38,7 @@ const NewNotePage = () => {
           folderId: folderId !== null ? folderId : undefined,
           type: "note",
         });
+        dispatch(triggerUpdate());
       }
       navigate(-1);
     } catch (err) {

@@ -3,7 +3,7 @@ import { triggerUpdate, updateSecretKey } from "@/store/slices/vaultSlice";
 import { cryptoUtils } from "@/utils/cryptoUtils";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LocalLoginPage = () => {
   const [masterPassword, setMasterPassword] = useState<string>("");
@@ -53,6 +53,14 @@ const LocalLoginPage = () => {
             required 
           />
         </fieldset>
+        <div className="mr-2 w-full text-right">
+          <div className="mt-1">
+            <Link className="underline text-blue-900" to="/import">Import existing vault</Link>
+          </div>
+          <div className="mt-1">
+            <Link className="underline text-blue-900" to="/import">Terms of usage</Link>
+          </div>
+        </div>
         <div className="flex">
           <div className="flex-1 px-1">
             <button className="btn btn-primary mt-5 w-full" type="submit">Submit</button>

@@ -1,8 +1,8 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { getSecretKey } from "@/store/slices/vaultSlice";
+import { getSecretKey, triggerUpdate } from "@/store/slices/vaultSlice";
 import { vaultService } from "@/services/vault-service";
 import { nanoid } from "@reduxjs/toolkit";
 
@@ -10,6 +10,7 @@ const NewFolderPage = () => {
   const [searchParams] = useSearchParams();
 
   const secretKey = useSelector(getSecretKey);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [_, setAdding] = useState<boolean>(false);
@@ -35,6 +36,7 @@ const NewFolderPage = () => {
         parentFolderId: folderId !== null ? folderId : undefined,
         type: "folder",
       });
+      dispatch(triggerUpdate());
     }
     navigate(-1);
     setAdding(false);

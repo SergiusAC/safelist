@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import LeftArrowIcon from "../../../icons/LeftArrowIcon";
-import { getSecretKey, getUpdateTrigger } from "../../../store/slices/vaultSlice";
+import { getSecretKey, getUpdateTrigger, triggerUpdate } from "../../../store/slices/vaultSlice";
 import { vaultService } from "@/services/vault-service";
 import type { VaultNoteT } from "@/services/vault-service/types";
 
 const EditNotePage = () => {
   const vaultUpdates = useSelector(getUpdateTrigger);
   const secretKey = useSelector(getSecretKey);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { noteId } = useParams<{noteId: string}>();
@@ -55,6 +56,7 @@ const EditNotePage = () => {
       updatedAt: new Date(),
       type: "note",
     })
+    dispatch(triggerUpdate());
     navigate(-1);
     setAdding(false);
   }
@@ -66,6 +68,7 @@ const EditNotePage = () => {
     const answer = confirm("Do you want to delete the note \"" + name + "\"");
     if (answer === true) {
       await vaultService.deleteNoteById(secretKey, noteId);
+      dispatch(triggerUpdate());
       navigate(-1);
     }
   }

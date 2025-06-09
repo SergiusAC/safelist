@@ -1,7 +1,6 @@
 import { useSelector } from "react-redux";
 import { getSecretKey, getUpdateTrigger } from "@/store/slices/vaultSlice";
 import PlusIcon from "@/icons/PlusIcon";
-import FileDownloadIcon from "@/icons/FileDownloadIcon";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import FileIcon from "@/icons/FileIcon";
@@ -52,7 +51,6 @@ const VaultPage = () => {
           const _currentFolder = await vaultService.getFolderById(secretKey, folderId);
           setCurrentFolder(_currentFolder);
           const _folders = await vaultService.getFolders(secretKey, folderId);
-          console.log("_folders", _folders);
           setFolders(_folders);
           const _notes = await vaultService.getNotesByFolderId(secretKey, folderId);
           setNotes(_notes);
