@@ -1,14 +1,16 @@
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
-import { exportService } from "@/services/export-service";
 import { securityService } from "@/services/security-service";
 import { localStorageService } from "@/storage/local-storage/localStorageService";
-import { useState } from "react";
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom";
 
-const ExportPage = () => {
-  const navigate = useNavigate(); 
+interface ComponentProps {
+  onSuccess: () => any;
+}
 
-  const [exportMode, setExportMode] = useState<string>("encrypted");
+const ConfirmPasswordComponent: React.FC<ComponentProps> = ({ onSuccess }) => {
+  const navigate = useNavigate();
+  const [masterPassword, setMasterPassword] = useState<string>();
 
   const handleClickBack = () => {
     navigate(-1);
@@ -16,9 +18,8 @@ const ExportPage = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const masterPassword = prompt("Input master password");
-    if (!masterPassword) {
-      alert("Confirm master password");
+    if (masterPassword === undefined || masterPassword.trim().length === 0) {
+      alert("Master password is empty");
       return;
     }
     const salt = await localStorageService.getSecretKeySalt();
@@ -36,7 +37,7 @@ const ExportPage = () => {
       alert("Incorrect master password");
       return;
     }
-    exportService.export(masterPassword, salt, secretKeyDigest, exportMode);
+    onSuccess();
   }
 
   return <>
@@ -49,33 +50,33 @@ const ExportPage = () => {
         </div>
       </div>
       <div className="navbar-center">
-        <a className="btn btn-ghost text-xl">Export Vault</a>
+        <a className="btn btn-ghost text-xl">Confirm master password</a>
       </div>
       <div className="navbar-end">
       </div>
     </div>
-    <div className="ml-4 mr-4">
+    <div className="mx-4">
+      <div className="text-md italic mb-2">The note requires master password confirmation</div>
       <form onSubmit={handleSubmit}>
         <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend text-sm">Export mode</legend>
-          <select value={exportMode} onChange={e => setExportMode(e.target.value)} className="select w-full">
-            <option value="encrypted">Encrypted (recommended mode)</option>
-            <option value="decrypted">Decrypted</option>
-          </select>
+          <legend className="fieldset-legend text-sm">Master Password</legend>
+          <input 
+            value={masterPassword}
+            onChange={e => setMasterPassword(e.target.value)}
+            type="password" 
+            className="input w-full" 
+            placeholder="Input password..." 
+            required 
+          />
         </fieldset>
         <div className="flex">
-          <div className="flex-1 px-1">
-            <form method="dialog">
-              <button className="btn mt-5 w-full" onClick={handleClickBack}>Close</button>
-            </form>
-          </div>
-          <div className="flex-1 px-1">
-            <button className="btn btn-primary mt-5 w-full" type="submit">Export</button>
+          <div className="flex-1">
+            <button className="btn btn-primary mt-5 w-full" type="submit">Confirm</button>
           </div>
         </div>
       </form>
     </div>
   </>
-};
+}
 
-export default ExportPage;
+export default ConfirmPasswordComponent;

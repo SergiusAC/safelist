@@ -13,9 +13,7 @@ const NewFolderPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [_, setAdding] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
-  const [passwordRequired, setPasswordRequired] = useState<string>("no");
 
   const handleClickBack = () => {
     navigate(-1);
@@ -23,14 +21,12 @@ const NewFolderPage = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setAdding(true);
     if (secretKey !== null) {
       const nowDate = new Date();
       const folderId = searchParams.get("folderId");
       await vaultService.putFolder(secretKey, {
         id: nanoid(),
         name: name,
-        passwordRequired: passwordRequired == "yes",
         createdAt: nowDate,
         updatedAt: nowDate,
         parentFolderId: folderId !== null ? folderId : undefined,
@@ -39,7 +35,6 @@ const NewFolderPage = () => {
       dispatch(triggerUpdate());
     }
     navigate(-1);
-    setAdding(false);
   }
 
   return <>
@@ -71,22 +66,14 @@ const NewFolderPage = () => {
           />
         </fieldset>
 
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend text-sm">Password required</legend>
-          <select value={passwordRequired} onChange={e => setPasswordRequired(e.target.value)} className="select w-full">
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </fieldset>
-
         <div className="flex">
           <div className="flex-1 px-1">
             <form method="dialog">
-              <button className="btn btn-soft mt-5 w-full" onClick={handleClickBack}>Close</button>
+              <button className="btn mt-5 w-full" onClick={handleClickBack}>Close</button>
             </form>
           </div>
           <div className="flex-1 px-1">
-            <button className="btn btn-soft btn-primary mt-5 w-full" type="submit">Add</button>
+            <button className="btn btn-primary mt-5 w-full" type="submit">Add</button>
           </div>
         </div>
       </form>

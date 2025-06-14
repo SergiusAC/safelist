@@ -16,7 +16,6 @@ export interface VaultNoteT {
 export interface VaultFolderT {
   id: string;
   name: string;
-  passwordRequired: boolean;
   parentFolderId?: string;
   createdAt: Date;
   updatedAt: Date;

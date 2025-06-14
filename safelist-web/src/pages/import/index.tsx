@@ -117,11 +117,11 @@ const ImportPage = () => {
         <div className="flex">
           <div className="flex-1 px-1">
             <form method="dialog">
-              <button className="btn btn-soft mt-5 w-full" onClick={handleClickBack}>Close</button>
+              <button className="btn mt-5 w-full" onClick={handleClickBack}>Close</button>
             </form>
           </div>
           <div className="flex-1 px-1">
-            <button className="btn btn-soft btn-primary mt-5 w-full" type="submit">Import</button>
+            <button className="btn btn-primary mt-5 w-full" type="submit">Import</button>
           </div>
         </div>
       </form>

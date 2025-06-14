@@ -96,11 +96,11 @@ const YandexSyncPage = () => {
         <div className="flex">
           <div className="flex-1 px-1">
             <form method="dialog">
-              <button className="btn btn-soft mt-5 w-full" onClick={handleClickBack} type="button">Close</button>
+              <button className="btn mt-5 w-full" onClick={handleClickBack} type="button">Close</button>
             </form>
           </div>
           <div className="flex-1 px-1">
-            <button className="btn btn-soft btn-primary mt-5 w-full" type="submit">Enable</button>
+            <button className="btn btn-primary mt-5 w-full" type="submit">Enable</button>
           </div>
         </div>
         <button className="btn btn-outline btn-error mt-4 w-full" onClick={handleDelete} type="button">Delete</button>

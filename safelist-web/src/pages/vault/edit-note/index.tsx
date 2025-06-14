@@ -5,6 +5,7 @@ import LeftArrowIcon from "../../../icons/LeftArrowIcon";
 import { getSecretKey, getUpdateTrigger, triggerUpdate } from "../../../store/slices/vaultSlice";
 import { vaultService } from "@/services/vault-service";
 import type { VaultNoteT } from "@/services/vault-service/types";
+import ConfirmPasswordComponent from "../components/confirm-password";
 
 const EditNotePage = () => {
   const vaultUpdates = useSelector(getUpdateTrigger);
@@ -14,10 +15,11 @@ const EditNotePage = () => {
 
   const { noteId } = useParams<{noteId: string}>();
 
-  const [_, setAdding] = useState<boolean>(false);
   const [currentNote, setCurrentNote] = useState<VaultNoteT>();
   const [name, setName] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [passwordRequired, setPasswordRequired] = useState<string>("no");
+  const [passwordConfirmed, setPasswordConfirmed] = useState<boolean>(false);
 
   useEffect(() => {
     const _sync = async () => {
@@ -30,6 +32,7 @@ const EditNotePage = () => {
           setCurrentNote(foundNote);
           setName(foundNote.name);
           setContent(foundNote.content ?? "");
+          setPasswordRequired(foundNote.passwordRequired === true ? "yes" : "no");
         }
       }
     }
@@ -42,7 +45,6 @@ const EditNotePage = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setAdding(true);
     if (!secretKey || !noteId || !currentNote) {
       return;
     }
@@ -50,7 +52,7 @@ const EditNotePage = () => {
       id: currentNote.id,
       name: name,
       content: content,
-      passwordRequired: false,
+      passwordRequired: passwordRequired === "yes",
       folderId: currentNote.folderId,
       createdAt: currentNote.createdAt,
       updatedAt: new Date(),
@@ -58,7 +60,6 @@ const EditNotePage = () => {
     })
     dispatch(triggerUpdate());
     navigate(-1);
-    setAdding(false);
   }
 
   const handleDelete = async () => {
@@ -71,6 +72,10 @@ const EditNotePage = () => {
       dispatch(triggerUpdate());
       navigate(-1);
     }
+  }
+
+  if (currentNote?.passwordRequired && !passwordConfirmed) {
+    return <ConfirmPasswordComponent onSuccess={() => setPasswordConfirmed(true)} />
   }
 
   return <>
@@ -113,12 +118,20 @@ const EditNotePage = () => {
           </textarea>
         </fieldset>
 
+        <fieldset className="fieldset w-full">
+          <legend className="fieldset-legend text-sm">Password required</legend>
+          <select value={passwordRequired} onChange={e => setPasswordRequired(e.target.value)} className="select w-full">
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </fieldset>
+
         <div className="flex">
           <div className="flex-1 px-1">
-            <button className="btn btn-soft mt-5 w-full" onClick={handleClickBack} type="button">Close</button>
+            <button className="btn mt-5 w-full" onClick={handleClickBack} type="button">Close</button>
           </div>
           <div className="flex-1 px-1">
-            <button className="btn btn-soft btn-primary mt-5 w-full" type="submit">Update</button>
+            <button className="btn btn-primary mt-5 w-full" type="submit">Update</button>
           </div>
         </div>
         <button className="btn btn-outline btn-error mt-4 w-full" onClick={handleDelete} type="button">Delete</button>

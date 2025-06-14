@@ -13,7 +13,6 @@ const EditFolderPage = () => {
   const navigate = useNavigate();
   const [currentFolder, setCurrentFolder] = useState<VaultFolderT>();
   const [name, setName] = useState<string>("");
-  const [passwordRequired, setPasswordRequired] = useState<string>("no");
 
   useEffect(() => {
     const _sync = async() => {
@@ -26,11 +25,6 @@ const EditFolderPage = () => {
       }
       setCurrentFolder(folder);
       setName(folder.name);
-      if (folder.passwordRequired === true) {
-        setPasswordRequired("yes");
-      } else {
-        setPasswordRequired("no");
-      }
     };
     _sync();
   }, [folderId]);
@@ -46,7 +40,6 @@ const EditFolderPage = () => {
       await vaultService.putFolder(secretKey, {
         id: currentFolder.id,
         name: name,
-        passwordRequired: passwordRequired == "yes",
         createdAt: currentFolder.createdAt,
         updatedAt: nowDate,
         parentFolderId: currentFolder.parentFolderId,
@@ -98,20 +91,12 @@ const EditFolderPage = () => {
           />
         </fieldset>
 
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend text-sm">Password required</legend>
-          <select value={passwordRequired} onChange={e => setPasswordRequired(e.target.value)} className="select w-full">
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </fieldset>
-
         <div className="flex">
           <div className="flex-1 px-1">
-            <button className="btn btn-soft mt-5 w-full" type="button" onClick={handleClickBack}>Close</button>
+            <button className="btn mt-5 w-full" type="button" onClick={handleClickBack}>Close</button>
           </div>
           <div className="flex-1 px-1">
-            <button className="btn btn-soft btn-primary mt-5 w-full" type="submit">Update</button>
+            <button className="btn btn-primary mt-5 w-full" type="submit">Update</button>
           </div>
         </div>
         <button className="btn btn-outline btn-error mt-4 w-full" onClick={handleDelete} type="button">Delete</button>
