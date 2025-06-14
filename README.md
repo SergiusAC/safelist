@@ -4,4 +4,4 @@ Safelist is a browser-based secure note manager that allows users to manage encr
 
 ---
 
-**Documentation**: [https://github.com/SergiusAC/safelist](https://github.com/SergiusAC/safelist)
+**Documentation**: [docs](./docs/README.md)

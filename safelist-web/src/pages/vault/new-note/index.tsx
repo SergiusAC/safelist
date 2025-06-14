@@ -24,21 +24,23 @@ const NewNotePage = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
-      if (secretKey !== null) {
-        const nowDate = new Date();
-        const folderId = searchParams.get("folderId");
-        await vaultService.putNote(secretKey, {
-          id: nanoid(),
-          name: name,
-          content: content,
-          passwordRequired: passwordRequired === "yes",
-          createdAt: nowDate,
-          updatedAt: nowDate,
-          folderId: folderId !== null ? folderId : undefined,
-          type: "note",
-        });
-        dispatch(triggerUpdate());
+      if (secretKey === null) {
+        navigate("/auth/local-login");
+        return;
       }
+      const nowDate = new Date();
+      const folderId = searchParams.get("folderId");
+      await vaultService.putNote(secretKey, {
+        id: nanoid(),
+        name: name,
+        content: content,
+        passwordRequired: passwordRequired === "yes",
+        createdAt: nowDate,
+        updatedAt: nowDate,
+        folderId: folderId !== null ? folderId : undefined,
+        type: "note",
+      });
+      dispatch(triggerUpdate());
       navigate(-1);
     } catch (err) {
       console.error("failed to create a note", err);

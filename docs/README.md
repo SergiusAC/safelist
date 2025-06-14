@@ -1,10 +1,8 @@
 # Documentation
 
 Sections:
-- Introduction
-- Features
-- Architecture & Workflow
-- Security
-- Storage
-- Backups & Sync
-- For developers
+- [Introduction](./intro.md)
+- [Features](./features.md)
+- [How it works](./how-it-works.md)
+- [Storage](./storage.md)
+- [Import / export](./import-export.md)

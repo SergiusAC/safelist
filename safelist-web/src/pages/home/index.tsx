@@ -7,7 +7,7 @@ const HomePage = () => {
         <div className="max-w-xl">
           <h1 className="text-5xl font-bold">Safelist</h1>
           <p className="pt-6">
-            Safelist is a browser-based application for secure note management. <br/>
+            Safelist is a browser-based secure note manager.<br/>
           </p>
         </div>
       </div>
@@ -29,11 +29,11 @@ const HomePage = () => {
             </li>
             <li>
               <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-              <span>Optional cloud drive synchronization</span>
+              <span>Data export/import in JSON-format</span>
             </li>
             <li>
               <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-              <span>Data export/import</span>
+              <span>Optional cloud synchronization</span>
             </li>
             <li>
               <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>

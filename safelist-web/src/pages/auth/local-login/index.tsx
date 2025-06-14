@@ -53,12 +53,17 @@ const LocalLoginPage = () => {
             required 
           />
         </fieldset>
-        <div className="mr-2 w-full text-right">
+        <div className="mr-2 w-full flex justify-between">
           <div className="mt-1">
             <Link className="underline text-blue-900" to="/import">Import existing vault</Link>
           </div>
-          <div className="mt-1">
-            <Link className="underline text-blue-900" to="/import">Terms of usage</Link>
+          <div>
+            <div className="mt-1">
+              <a className="underline text-blue-900" href="/terms/terms-of-usage" target="_blank">Terms of usage</a>
+            </div>
+            <div className="mt-1">
+              <a className="underline text-blue-900" href="/terms/privacy-policy" target="_blank">Privacy policy</a>
+            </div>
           </div>
         </div>
         <div className="flex">
