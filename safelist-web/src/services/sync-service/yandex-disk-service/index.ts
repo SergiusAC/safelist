@@ -1,10 +1,39 @@
+import { stringUtils } from "@/utils/stringUtils";
+import type { Location } from "react-router-dom";
+
+const CLIENT_ID = import.meta.env.VITE_YANDEX_CLIENT_ID;
+const CLIENT_SECRET = import.meta.env.VITE_YANDEX_CLIENT_SECRET;
 const API_RESOURCES = "https://cloud-api.yandex.net/v1/disk/resources?path=app:";
 const API_DOWNLOAD = "https://cloud-api.yandex.net/v1/disk/resources/download?path=app:";
 const API_UPLOAD = "https://cloud-api.yandex.net/v1/disk/resources/upload?path=app:";
-
 const BACKUPS_PATH = "/backups";
 
+export interface YandexOAuthTokenResponse {
+  accessToken: string;
+  expiresIn: number;
+}
+
 export const yandexDiskService = {
+
+  getOAuthTokenUrl() {
+    return `https://oauth.yandex.ru/authorize?response_type=token&client_id=${CLIENT_ID}`;
+  },
+
+  parseOAuthTokenResponseUrl(location: Location): YandexOAuthTokenResponse {
+    const query = new URLSearchParams(location.hash.replace("#", ""));
+    const accessToken = query.get("access_token");
+    if (accessToken === null || accessToken.trim().length === 0) {
+      throw new Error("access_token was not retrieved");
+    }
+    const expiresIn = query.get("expires_in");
+    if (stringUtils.isBlank(expiresIn)) {
+      throw new Error("expires_at parameter was not retrieved");
+    }
+    return {
+      accessToken: accessToken,
+      expiresIn: Number.parseInt(expiresIn!)
+    }
+  },
 
   async backupsExists(token: string): Promise<boolean> {
     const response = await fetch(API_RESOURCES + BACKUPS_PATH, {

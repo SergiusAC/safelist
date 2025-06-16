@@ -1,9 +1,11 @@
 import { localStorageService } from "@/storage/local-storage/localStorageService"
 import { yandexDiskService } from "./yandex-disk-service";
 import { exportService } from "../export-service";
-import type { SyncSettingsType, YandexDiskSyncSettingsType } from "./types";
+import type { DropboxSyncSettingsType, SyncSettingsType, YandexDiskSyncSettingsType } from "./types";
 import { cryptoUtils } from "@/utils/cryptoUtils";
 import type { EncryptionResult } from "@/utils/types";
+import { stringUtils } from "@/utils/stringUtils";
+import { dropboxService } from "./dropbox-service";
 
 export const syncService = {
 
@@ -11,7 +13,8 @@ export const syncService = {
     const currentSettings = await this._loadSettings(key);
     if (currentSettings === null) {
       const newSettings: SyncSettingsType = {
-        yandexDisk: settings
+        yandexDisk: settings,
+        dropbox: null
       }
       await this._persistSettings(key, newSettings);
     } else {
@@ -28,6 +31,28 @@ export const syncService = {
     }
   },
 
+  async addSyncWithDropbox(key: CryptoKey, settings: DropboxSyncSettingsType) {
+    const currentSettings = await this._loadSettings(key);
+    if (currentSettings === null) {
+      const newSettings: SyncSettingsType = {
+        yandexDisk: null,
+        dropbox: settings
+      }
+      await this._persistSettings(key, newSettings);
+    } else {
+      currentSettings.dropbox = settings;
+      await this._persistSettings(key, currentSettings);
+    }
+  },
+
+  async deleteSyncWithDropbox(key: CryptoKey) {
+    const currentSettings = await this._loadSettings(key);
+    if (currentSettings !== null) {
+      currentSettings.dropbox = null;
+      await this._persistSettings(key, currentSettings);
+    }
+  },
+
   async getSyncSettings(key: CryptoKey): Promise<SyncSettingsType | null> {
     return await this._loadSettings(key);
   },
@@ -38,9 +63,38 @@ export const syncService = {
       console.log("Sync not enabled");
       return;
     }
-    if (settings.yandexDisk?.token && settings.yandexDisk.token.trim().length > 0) {
-      const objectForExport = await exportService.getEncryptedVault();
-      await yandexDiskService.createBackup(settings.yandexDisk?.token, JSON.stringify(objectForExport, null, 2));
+    if (stringUtils.isNotBlank(settings.yandexDisk?.token)) {
+      await this._startSyncWithYandexDisk(settings.yandexDisk!);
+    }
+    if (stringUtils.isNotBlank(settings.dropbox?.accessToken) && stringUtils.isNotBlank(settings.dropbox?.refreshToken)) {
+      await this._startSyncWithDropbox(key, settings.dropbox!);
+    }
+  },
+
+  async _startSyncWithYandexDisk(settings: YandexDiskSyncSettingsType) {
+    const yandexToken = settings.token;
+    const backupsExists = await yandexDiskService.backupsExists(yandexToken);
+    if (!backupsExists) {
+      await yandexDiskService.createBackupsFolder(yandexToken);
+    }
+    const objectForExport = await exportService.getEncryptedVault();
+    await yandexDiskService.createBackup(yandexToken, JSON.stringify(objectForExport, null, 2));
+  },
+
+  async _startSyncWithDropbox(key: CryptoKey, settings: DropboxSyncSettingsType) {
+    const dbxAuth = await dropboxService.checkAndRefreshAccessToken(settings);
+    const objectForExport = await exportService.getEncryptedVault();
+    await dropboxService.uploadFile(
+      dbxAuth.getAccessToken(), 
+      "/backups/vault.json", 
+      JSON.stringify(objectForExport, null, 2)
+    );
+    // update Dropbox settings, if the access_token was refreshed
+    if (dbxAuth.getAccessToken() !== settings.accessToken) {
+      console.log("dropbox access_token refreshed");
+      settings.accessToken = dbxAuth.getAccessToken();
+      settings.accessTokenExpiresAt = dbxAuth.getAccessTokenExpiresAt().getTime();
+      await this.addSyncWithDropbox(key, settings);
     }
   },
 

@@ -12,6 +12,8 @@ import ImportPage from "./import";
 import SyncPage from "./sync";
 import YandexSyncPage from "./sync/yandex-sync";
 import YandexTokenPage from "./sync/yandex-token";
+import DropboxSyncPage from "./sync/dropbox-sync";
+import DropboxTokenPage from "./sync/dropbox-token";
 
 export const router = createBrowserRouter([
   {
@@ -69,6 +71,14 @@ export const router = createBrowserRouter([
       {
         path: "/sync/yandex-token",
         element: <YandexTokenPage />
+      },
+      {
+        path: "/sync/dropbox",
+        element: <DropboxSyncPage />
+      },
+      {
+        path: "/sync/dropbox-token",
+        element: <DropboxTokenPage />
       },
     ],
   }

@@ -13,7 +13,12 @@ const RootApp: React.FC = () => {
     const _startSync = async () => {
       if (secretKey !== null && secretKey !== undefined) {
         console.log("start sync");
-        await syncService.startSync(secretKey);
+        try {
+          await syncService.startSync(secretKey);
+        } catch (err: any) {
+          console.error(err);
+          alert("Sync failed with error: " + err.message + ". Try to update the sync settings.");
+        }
         console.log("end sync");
       }
     };

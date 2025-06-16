@@ -14,7 +14,7 @@
   - Master key salt
   - Application settings
 
-## Yandex Disk Sync
+## Cloud drives
 
-- Uploads an encrypted `.json` file to Yandex Disk.
-- Requires OAuth authentication.
+- Uploads an encrypted `.json` file to Dropbox and/or Yandex Disk.
+- Requires OAuth authentication for each cloud drive.

@@ -12,9 +12,8 @@
 - All data is stored securely in the browser.
 - Supports working fully offline.
 
-## ☁️ Encrypted Sync with Yandex Disk
-- Sync encrypted data to the cloud.
-- Export and import as encrypted JSON files.
+## ☁️ Encrypted sync with cloud drives
+- Sync encrypted data to the cloud drives (Dropbox, Yandex Disk).
 
 ## 🔄 Import / Export
 - Full backups of notes and structure.

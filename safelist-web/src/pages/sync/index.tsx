@@ -1,14 +1,17 @@
 import EditIcon from "@/icons/EditIcon";
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
-import PlusIcon from "@/icons/PlusIcon";
+import { syncService } from "@/services/sync-service";
 import { getSecretKey } from "@/store/slices/vaultSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import SyncStatusComponent from "./components/sync-status";
+import type { SyncSettingsType } from "@/services/sync-service/types";
 
 const SyncPage = () => {
   const navigate = useNavigate();
   const secretKey = useSelector(getSecretKey);
+  const [syncSettings, setSyncSettings] = useState<SyncSettingsType>();
 
   const handleClickBack = () => {
     navigate(-1);
@@ -20,9 +23,33 @@ const SyncPage = () => {
         navigate("/auth/local-login");
         return;
       }
+      const settings = await syncService.getSyncSettings(secretKey!);
+      setSyncSettings(settings ?? undefined);
     }
     _call();
   }, []);
+
+  const isDropboxSyncEnabled = () => {
+    return syncSettings?.dropbox !== undefined && syncSettings.dropbox !== null;
+  }
+  
+  const isDropboxSyncExpired = () => {
+    if (!syncSettings?.dropbox?.accessTokenExpiresAt) {
+      return false;
+    }
+    return (new Date().getTime()) >= syncSettings.dropbox.accessTokenExpiresAt;
+  }
+
+  const isYandexSyncEnabled = () => {
+    return syncSettings?.yandexDisk !== undefined && syncSettings.yandexDisk !== null;
+  }
+  
+  const isYandexSyncExpired = () => {
+    if (!syncSettings?.yandexDisk?.expiresAt) {
+      return false;
+    }
+    return (new Date().getTime()) >= syncSettings.yandexDisk.expiresAt;
+  }
 
   return <>
     <div className="navbar bg-base-100">
@@ -40,38 +67,24 @@ const SyncPage = () => {
       </div>
     </div>
     <div className="m-4">
-      <ul className="flex bg-base-200 rounded-box w-full justify-between mb-2">
-        <div className="flex">
-          <ul className="menu menu-horizontal">
-            <li>
-              <Link to="/sync/yandex-disk">
-                <PlusIcon /> Yandex Disk
-              </Link>
-            </li>
-            <li>
-              <Link to="/sync/google-drive">
-                <PlusIcon /> Google Drive
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </ul>
-    </div>
-    <div className="m-4">
       <ul className="list bg-base-100 rounded-box shadow-md">
         <li className="list-row">
           <div className="list-col-grow flex items-center">
-            <div>Yandex Disk</div>
+            <div>
+              <SyncStatusComponent syncEnabled={isDropboxSyncEnabled()} syncExpired={isDropboxSyncExpired()} /> Dropbox
+            </div>
           </div>
-          <Link className="btn btn-square btn-ghost" to="/sync/yandex-disk">
+          <Link className="btn btn-square btn-ghost" to="/sync/dropbox">
             <EditIcon />
           </Link>
         </li>
         <li className="list-row">
           <div className="list-col-grow flex items-center">
-            <div>Google Drive</div>
+            <div>
+              <SyncStatusComponent syncEnabled={isYandexSyncEnabled()} syncExpired={isYandexSyncExpired()} /> Yandex Disk
+            </div>
           </div>
-          <Link className="btn btn-square btn-ghost" to="/sync/google-drive">
+          <Link className="btn btn-square btn-ghost" to="/sync/yandex-disk">
             <EditIcon />
           </Link>
         </li>
