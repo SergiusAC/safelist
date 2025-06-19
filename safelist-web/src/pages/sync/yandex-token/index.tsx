@@ -61,13 +61,13 @@ const YandexTokenPage = () => {
         return;
       }
       const key = await cryptoUtils.deriveSecretKey(params.masterPassword, params.keySalt);
-      await syncService.addSyncWithYandexDisk(key, {
+      await syncService.putSyncWithYandexDisk(key, {
         id: nanoid(),
         token: params.accessToken,
         expiresAt: params.expiresAt,
         enabled: true
       });
-      alert("Sync with Yandex Disk enabled!");
+      alert("Sync with Yandex Disk enabled");
       navigate("/sync/yandex-disk");
     } catch (err: any) {
       alert(err.message);

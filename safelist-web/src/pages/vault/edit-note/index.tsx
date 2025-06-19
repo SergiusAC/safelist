@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import LeftArrowIcon from "../../../icons/LeftArrowIcon";
 import { getSecretKey, getUpdateTrigger, triggerUpdate } from "../../../store/slices/vaultSlice";
 import { vaultService } from "@/services/vault-service";
 import type { VaultNoteT } from "@/services/vault-service/types";
 import ConfirmPasswordComponent from "../components/confirm-password";
+import { stringUtils } from "@/utils/stringUtils";
 
 const EditNotePage = () => {
   const vaultUpdates = useSelector(getUpdateTrigger);
@@ -21,11 +22,12 @@ const EditNotePage = () => {
   const [passwordRequired, setPasswordRequired] = useState<string>("no");
   const [passwordConfirmed, setPasswordConfirmed] = useState<boolean>(false);
 
+  if (!secretKey) {
+    return <Navigate to="/auth/local-login" />
+  }
+
   useEffect(() => {
     const _sync = async () => {
-      if (secretKey === null) {
-        return;
-      }
       if (noteId) {
         const foundNote = await vaultService.getNoteById(secretKey, noteId);
         if (foundNote) {
@@ -45,7 +47,7 @@ const EditNotePage = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (!secretKey || !noteId || !currentNote) {
+    if (stringUtils.isBlank(noteId) || currentNote === undefined) {
       return;
     }
     await vaultService.putNote(secretKey, {
@@ -63,12 +65,12 @@ const EditNotePage = () => {
   }
 
   const handleDelete = async () => {
-    if (!secretKey || !noteId) {
+    if (stringUtils.isBlank(noteId)) {
       return;
     }
     const answer = confirm("Do you want to delete the note \"" + name + "\"");
     if (answer === true) {
-      await vaultService.deleteNoteById(secretKey, noteId);
+      await vaultService.deleteNoteById(secretKey, noteId!);
       dispatch(triggerUpdate());
       navigate(-1);
     }

@@ -9,7 +9,7 @@ import { dropboxService } from "./dropbox-service";
 
 export const syncService = {
 
-  async addSyncWithYandexDisk(key: CryptoKey, settings: YandexDiskSyncSettingsType) {
+  async putSyncWithYandexDisk(key: CryptoKey, settings: YandexDiskSyncSettingsType) {
     const currentSettings = await this._loadSettings(key);
     if (currentSettings === null) {
       const newSettings: SyncSettingsType = {
@@ -31,7 +31,7 @@ export const syncService = {
     }
   },
 
-  async addSyncWithDropbox(key: CryptoKey, settings: DropboxSyncSettingsType) {
+  async putSyncWithDropbox(key: CryptoKey, settings: DropboxSyncSettingsType) {
     const currentSettings = await this._loadSettings(key);
     if (currentSettings === null) {
       const newSettings: SyncSettingsType = {
@@ -94,7 +94,7 @@ export const syncService = {
       console.log("dropbox access_token refreshed");
       settings.accessToken = dbxAuth.getAccessToken();
       settings.accessTokenExpiresAt = dbxAuth.getAccessTokenExpiresAt().getTime();
-      await this.addSyncWithDropbox(key, settings);
+      await this.putSyncWithDropbox(key, settings);
     }
   },
 

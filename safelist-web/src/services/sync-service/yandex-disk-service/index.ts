@@ -2,7 +2,6 @@ import { stringUtils } from "@/utils/stringUtils";
 import type { Location } from "react-router-dom";
 
 const CLIENT_ID = import.meta.env.VITE_YANDEX_CLIENT_ID;
-const CLIENT_SECRET = import.meta.env.VITE_YANDEX_CLIENT_SECRET;
 const API_RESOURCES = "https://cloud-api.yandex.net/v1/disk/resources?path=app:";
 const API_DOWNLOAD = "https://cloud-api.yandex.net/v1/disk/resources/download?path=app:";
 const API_UPLOAD = "https://cloud-api.yandex.net/v1/disk/resources/upload?path=app:";

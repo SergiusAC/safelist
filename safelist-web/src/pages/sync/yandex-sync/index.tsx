@@ -5,7 +5,7 @@ import { yandexDiskService } from "@/services/sync-service/yandex-disk-service";
 import { getSecretKey } from "@/store/slices/vaultSlice";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const YandexSyncPage = () => {
   const navigate = useNavigate();
@@ -13,16 +13,16 @@ const YandexSyncPage = () => {
   const [yandexSettings, setYandexSettings] = useState<YandexDiskSyncSettingsType>();
   const [syncEnabled, setSyncEnabled] = useState<boolean>(false);
 
+  if (!secretKey) {
+    return <Navigate to="/auth/local-login" />
+  }
+
   const handleClickBack = () => {
     navigate(-1);
   }
 
   useEffect(() => {
     const _do = async () => {
-      if (!secretKey) {
-        navigate("/auth/local-login");
-        return;
-      }
       const settings = await syncService.getSyncSettings(secretKey);
       if (settings?.yandexDisk) {
         setYandexSettings(settings.yandexDisk);
@@ -33,10 +33,6 @@ const YandexSyncPage = () => {
   }, [])
 
   const handleDelete = async () => {
-    if (!secretKey) {
-      navigate("/auth/local-login");
-      return;
-    }
     if (yandexSettings !== undefined) {
       await syncService.deleteSyncWithYandexDisk(secretKey);
       alert("Sync with Yandex Disk disabled");

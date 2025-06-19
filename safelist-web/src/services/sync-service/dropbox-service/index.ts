@@ -16,6 +16,7 @@ export const dropboxService = {
   async checkAndRefreshAccessToken(settings: DropboxSyncSettingsType): Promise<DropboxAuth> {
     const dbxAuth = new DropboxAuth({
       clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET,
       accessToken: settings.accessToken,
       refreshToken: settings.refreshToken,
       accessTokenExpiresAt: new Date(settings.accessTokenExpiresAt), 

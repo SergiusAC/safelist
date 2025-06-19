@@ -4,7 +4,7 @@ import { syncService } from "@/services/sync-service";
 import { getSecretKey } from "@/store/slices/vaultSlice";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import SyncStatusComponent from "./components/sync-status";
 import type { SyncSettingsType } from "@/services/sync-service/types";
 
@@ -13,18 +13,20 @@ const SyncPage = () => {
   const secretKey = useSelector(getSecretKey);
   const [syncSettings, setSyncSettings] = useState<SyncSettingsType>();
 
+  if (!secretKey) {
+    return <Navigate to="/auth/local-login" />
+  }
+
   const handleClickBack = () => {
     navigate(-1);
   }
 
   useEffect(() => {
     const _call = async () => {
-      if (!secretKey) {
-        navigate("/auth/local-login");
-        return;
+      const settings = await syncService.getSyncSettings(secretKey);
+      if (settings !== null) {
+        setSyncSettings(settings);
       }
-      const settings = await syncService.getSyncSettings(secretKey!);
-      setSyncSettings(settings ?? undefined);
     }
     _call();
   }, []);

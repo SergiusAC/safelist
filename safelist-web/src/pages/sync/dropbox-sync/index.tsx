@@ -5,7 +5,7 @@ import type { SyncSettingsType } from "@/services/sync-service/types";
 import { getSecretKey } from "@/store/slices/vaultSlice";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const DropboxSyncPage = () => {
   const navigate = useNavigate();
@@ -14,16 +14,15 @@ const DropboxSyncPage = () => {
   const [syncEnabled, setSyncEnabled] = useState<boolean>();
   const [syncSettings, setSyncSettings] = useState<SyncSettingsType>();
 
+  if (!secretKey) {
+    return <Navigate to="/auth/local-login" />
+  }
+
   const handleClickBack = () => {
     navigate(-1);
   }
 
   useEffect(() => {
-    if (!secretKey) {
-      navigate("/auth/local-login");
-      return;
-    }
-
     const _call = async () => {
       const settings = await syncService.getSyncSettings(secretKey)
       setSyncSettings(settings || undefined);
@@ -34,15 +33,10 @@ const DropboxSyncPage = () => {
         setAuthUrl(urlResp);
       }
     }
-    
     _call();
   }, []);
 
   const handleDelete = async () => {
-    if (!secretKey) {
-      navigate("/auth/local-login");
-      return;
-    }
     if (syncSettings?.dropbox !== undefined && syncSettings?.dropbox !== null) {
       await dropboxService.revokeTokens(syncSettings.dropbox.accessToken, syncSettings.dropbox.refreshToken);
       await syncService.deleteSyncWithDropbox(secretKey);

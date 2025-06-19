@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
@@ -17,6 +17,10 @@ const NewNotePage = () => {
   const [content, setContent] = useState<string>("");
   const [passwordRequired, setPasswordRequired] = useState<string>("no");
 
+  if (!secretKey) {
+    return <Navigate to="/auth/local-login" />
+  }
+
   const handleClickBack = () => {
     navigate(-1);
   }
@@ -24,10 +28,6 @@ const NewNotePage = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
-      if (secretKey === null) {
-        navigate("/auth/local-login");
-        return;
-      }
       const nowDate = new Date();
       const folderId = searchParams.get("folderId");
       await vaultService.putNote(secretKey, {

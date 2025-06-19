@@ -10,6 +10,7 @@ import type { VaultFolderT, VaultNoteT } from "@/services/vault-service/types";
 import EditIcon from "@/icons/EditIcon";
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import ThreeDotsIcon from "@/icons/ThreeDotsIcon";
+import { stringUtils } from "@/utils/stringUtils";
 
 const VaultPage = () => {
   const { folderId } = useParams<{folderId: string}>();
@@ -21,7 +22,7 @@ const VaultPage = () => {
   const [currentPath, setCurrentPath] = useState<VaultFolderT[]>([]);
   const [currentFolder, setCurrentFolder] = useState<VaultFolderT>();
 
-  if (secretKey === null) {
+  if (!secretKey) {
     return <Navigate to={"/auth/local-login"} />
   }
 
@@ -37,27 +38,25 @@ const VaultPage = () => {
 
   useEffect(() => {
     const syncVault = async () => {
-      if (secretKey !== null) {
-        if (folderId === undefined) {
-          setCurrentFolder(undefined);
-          const _notes = await vaultService.getRootNotes(secretKey);
-          setNotes(_notes);
-          const _folders = await vaultService.getFolders(secretKey);
-          setFolders(_folders);
-          setCurrentPath([]);
-          return;
-        }
-        if (folderId !== undefined) {
-          const _currentFolder = await vaultService.getFolderById(secretKey, folderId);
-          setCurrentFolder(_currentFolder);
-          const _folders = await vaultService.getFolders(secretKey, folderId);
-          setFolders(_folders);
-          const _notes = await vaultService.getNotesByFolderId(secretKey, folderId);
-          setNotes(_notes);
-          const pwdRes = await vaultService.pwd(secretKey, folderId);
-          setCurrentPath(pwdRes);
-          return;
-        }
+      if (stringUtils.isBlank(folderId)) {
+        setCurrentFolder(undefined);
+        const _notes = await vaultService.getRootNotes(secretKey);
+        setNotes(_notes);
+        const _folders = await vaultService.getFolders(secretKey);
+        setFolders(_folders);
+        setCurrentPath([]);
+        return;
+      }
+      if (stringUtils.isNotBlank(folderId)) {
+        const _currentFolder = await vaultService.getFolderById(secretKey, folderId!);
+        setCurrentFolder(_currentFolder);
+        const _folders = await vaultService.getFolders(secretKey, folderId);
+        setFolders(_folders);
+        const _notes = await vaultService.getNotesByFolderId(secretKey, folderId!);
+        setNotes(_notes);
+        const pwdRes = await vaultService.pwd(secretKey, folderId);
+        setCurrentPath(pwdRes);
+        return;
       }
     }
     syncVault();

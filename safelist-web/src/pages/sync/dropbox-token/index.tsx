@@ -3,6 +3,7 @@ import { syncService } from "@/services/sync-service";
 import { dropboxService } from "@/services/sync-service/dropbox-service";
 import { localStorageService } from "@/storage/local-storage/localStorageService";
 import { cryptoUtils } from "@/utils/cryptoUtils";
+import { stringUtils } from "@/utils/stringUtils";
 import { nanoid } from "@reduxjs/toolkit";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -18,11 +19,11 @@ const DropboxTokenPage = () => {
   useEffect(() => {
     const _call = async () => {
       const code = query.get("code");
-      if (!code || code.trim().length === 0) {
-        alert("Empty code");
+      if (stringUtils.isBlank(code)) {
+        alert("Empty authorization code");
         return;
       }
-      const result = await dropboxService.getAccessTokenFromCode(code);
+      const result = await dropboxService.getAccessTokenFromCode(code!);
       setAccessToken(result.accessToken);
       setRefreshToken(result.refreshToken);
       setTokenExpiresIn(result.expiresIn);
@@ -53,7 +54,7 @@ const DropboxTokenPage = () => {
         return;
       }
       const key = await cryptoUtils.deriveSecretKey(masterPassword, keySalt);
-      await syncService.addSyncWithDropbox(key, {
+      await syncService.putSyncWithDropbox(key, {
         id: nanoid(),
         accessToken: accessToken!,
         refreshToken: refreshToken!,
@@ -89,12 +90,12 @@ const DropboxTokenPage = () => {
       <div className="p-2 bg-gray-200 rounded">
         <fieldset className="fieldset w-full">
           <legend className="fieldset-legend text-sm">Access Token</legend>
-          <textarea className="input w-full h-15 text-wrap" value={accessToken || ""} />
+          <textarea className="input w-full h-15 text-wrap" value={accessToken} disabled />
         </fieldset>
 
         <fieldset className="fieldset w-full">
           <legend className="fieldset-legend text-sm">Refresh Token</legend>
-          <textarea className="input w-full h-15 text-wrap" value={refreshToken || ""} />
+          <textarea className="input w-full h-15 text-wrap" value={refreshToken} disabled />
         </fieldset>
 
         <button className="btn btn-primary w-full mt-4" onClick={handleActivateSync}>Activate sync with Dropbox</button>

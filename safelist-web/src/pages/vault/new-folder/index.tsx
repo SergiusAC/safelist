@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
@@ -15,25 +15,27 @@ const NewFolderPage = () => {
 
   const [name, setName] = useState<string>("");
 
+  if (!secretKey) {
+    return <Navigate to="/auth/local-login" />
+  }
+
   const handleClickBack = () => {
     navigate(-1);
   }
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (secretKey !== null) {
-      const nowDate = new Date();
-      const folderId = searchParams.get("folderId");
-      await vaultService.putFolder(secretKey, {
-        id: nanoid(),
-        name: name,
-        createdAt: nowDate,
-        updatedAt: nowDate,
-        parentFolderId: folderId !== null ? folderId : undefined,
-        type: "folder",
-      });
-      dispatch(triggerUpdate());
-    }
+    const nowDate = new Date();
+    const folderId = searchParams.get("folderId");
+    await vaultService.putFolder(secretKey, {
+      id: nanoid(),
+      name: name,
+      createdAt: nowDate,
+      updatedAt: nowDate,
+      parentFolderId: folderId !== null ? folderId : undefined,
+      type: "folder",
+    });
+    dispatch(triggerUpdate());
     navigate(-1);
   }
 

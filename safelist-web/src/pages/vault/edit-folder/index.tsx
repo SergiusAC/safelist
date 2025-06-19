@@ -2,9 +2,10 @@ import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import { vaultService } from "@/services/vault-service";
 import type { VaultFolderT } from "@/services/vault-service/types";
 import { getSecretKey, triggerUpdate } from "@/store/slices/vaultSlice";
+import { stringUtils } from "@/utils/stringUtils";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 const EditFolderPage = () => {
   const { folderId } = useParams<{folderId: string}>();
@@ -14,12 +15,16 @@ const EditFolderPage = () => {
   const [currentFolder, setCurrentFolder] = useState<VaultFolderT>();
   const [name, setName] = useState<string>("");
 
+  if (!secretKey) {
+    return <Navigate to="/auth/local-login" />
+  }
+
   useEffect(() => {
     const _sync = async() => {
-      if (!secretKey || !folderId) {
+      if (stringUtils.isBlank(folderId)) {
         return;
       }
-      const folder = await vaultService.getFolderById(secretKey, folderId)
+      const folder = await vaultService.getFolderById(secretKey, folderId!)
       if (folder === undefined) {
         return;
       }
@@ -35,7 +40,7 @@ const EditFolderPage = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (secretKey !== null && currentFolder !== undefined) {
+    if (currentFolder !== undefined) {
       const nowDate = new Date();
       await vaultService.putFolder(secretKey, {
         id: currentFolder.id,
@@ -51,7 +56,7 @@ const EditFolderPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!secretKey || !folderId) {
+    if (stringUtils.isBlank(folderId)) {
       return;
     }
     const answer = confirm("Do you want to delete the folder \"" + name + "\"");
