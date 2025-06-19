@@ -1,20 +1,17 @@
 import { useSelector } from "react-redux";
 import { getSecretKey, getUpdateTrigger } from "@/store/slices/vaultSlice";
 import PlusIcon from "@/icons/PlusIcon";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import FileIcon from "@/icons/FileIcon";
-import FolderIcon from "@/icons/FolderIcon";
 import { vaultService } from "@/services/vault-service";
 import type { VaultFolderT, VaultNoteT } from "@/services/vault-service/types";
-import EditIcon from "@/icons/EditIcon";
-import LeftArrowIcon from "@/icons/LeftArrowIcon";
 import ThreeDotsIcon from "@/icons/ThreeDotsIcon";
 import { stringUtils } from "@/utils/stringUtils";
+import VaultBreadcrumbs from "./components/vault-breadcrumbs";
+import VaultItemList from "./components/vault-item-list";
 
 const VaultPage = () => {
   const { folderId } = useParams<{folderId: string}>();
-  const navigate = useNavigate();
   const vaultUpdateTrigger = useSelector(getUpdateTrigger);
   const secretKey = useSelector(getSecretKey);
   const [notes, setNotes] = useState<VaultNoteT[]>([]);
@@ -24,16 +21,6 @@ const VaultPage = () => {
 
   if (!secretKey) {
     return <Navigate to={"/auth/local-login"} />
-  }
-
-  const handleFolderBack = () => {
-    if (currentFolder !== undefined) {
-      if (currentFolder.parentFolderId === undefined) {
-        navigate("/vault");
-      } else {
-        navigate("/vault/folder/" + currentFolder.parentFolderId);
-      }
-    }
   }
 
   useEffect(() => {
@@ -61,46 +48,6 @@ const VaultPage = () => {
     }
     syncVault();
   }, [vaultUpdateTrigger, folderId])
-
-  const renderBreadcrumbs = () => {
-    if (currentPath.length === 0) {
-      return <></>;
-    }
-    const parts = currentPath.map(pathItem => <>
-      <li><Link to={"/vault/folder/" + pathItem.id}>{pathItem.name}</Link></li>
-    </>);
-    return <>
-      <div className="m-2 breadcrumbs text-sm">
-        <ul>
-          {parts}
-        </ul>
-      </div>
-    </>
-  }
-
-  const renderVault = () => {
-    if (folders.length > 0 || notes.length > 0) {
-      const items = [...folders, ...notes];
-      return items.map((item: VaultNoteT | VaultFolderT) => <>
-        <li>
-          {item.type === "folder" && <>
-            <Link to={"/vault/folder/" + item.id} className="btn btn-circle btn-ghost w-full justify-between">
-              <div className="flex items-center"><FolderIcon /> <span className="ml-2">{item.name}</span></div>
-              <Link to={"/vault/edit-folder/" + item.id}>
-                <EditIcon />
-              </Link>
-            </Link>
-          </>}
-          {item.type === "note" && <>
-            <Link to={"/vault/edit-note/" + item.id} className="btn btn-circle btn-ghost w-full justify-start">
-              <FileIcon /> {item.name}
-            </Link>
-          </>}
-        </li>
-      </>);
-    }
-    return <div className="mt-2 mb-2 text-center text-md">No data</div>
-  }
 
   return <>
     <div className="navbar bg-base-100">
@@ -143,17 +90,8 @@ const VaultPage = () => {
           </ul>
         </div>
       </ul>
-      {renderBreadcrumbs()}
-      <ul className="menu menu-md bg-base-200 rounded-box w-full">
-        {folderId !== undefined && <>
-          <li>
-            <button className="btn btn-circle btn-ghost w-full justify-start" onClick={handleFolderBack}>
-              <LeftArrowIcon />
-            </button>
-          </li>
-        </>}
-        {renderVault()}
-      </ul>
+      <VaultBreadcrumbs foldersPath={currentPath} />
+      <VaultItemList currentFolder={currentFolder} folders={folders} notes={notes} />
     </div>
   </>
 };
