@@ -1,8 +1,8 @@
 # Features
 
 ## 🔐 Master Password Authentication
-- Uses PBKDF2 to derive a secure key.
-- Stores only a digest of the derived key for login validation.
+- A secure key is derived from the Master Password using **PBKDF2** with a randomly generated salt.
+- Only the **salt** and a **cryptographic digest** of the derived key are stored for login verification — the actual password is never saved.
 
 ## ✍️ Folder-Based Note Management
 - Create, edit, delete notes.

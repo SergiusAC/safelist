@@ -13,6 +13,7 @@ const DropboxTokenPage = () => {
   const query = new URLSearchParams(search);
   const [accessToken, setAccessToken] = useState<string>();
   const [refreshToken, setRefreshToken] = useState<string>();
+  const [password, setPassword] = useState<string>();
   const [tokenExpiresIn, setTokenExpiresIn] = useState<number>();
   const navigate = useNavigate();
 
@@ -32,8 +33,7 @@ const DropboxTokenPage = () => {
   }, []);
 
   const handleActivateSync = async () => {
-    const masterPassword = prompt("Input master password");
-    if (masterPassword === null || masterPassword.trim().length === 0) {
+    if (stringUtils.isBlank(password)) {
       alert("Master password is empty");
       return;
     }
@@ -48,12 +48,12 @@ const DropboxTokenPage = () => {
       return;
     }
     try {
-      const valid = await securityService.checkMasterPassword(masterPassword, keySalt, keyDigest);
+      const valid = await securityService.checkMasterPassword(password!.trim(), keySalt, keyDigest);
       if (!valid) {
         alert("Master password is incorrect");
         return;
       }
-      const key = await cryptoUtils.deriveSecretKey(masterPassword, keySalt);
+      const key = await cryptoUtils.deriveSecretKey(password!.trim(), keySalt);
       await syncService.putSyncWithDropbox(key, {
         id: nanoid(),
         accessToken: accessToken!,
@@ -96,6 +96,18 @@ const DropboxTokenPage = () => {
         <fieldset className="fieldset w-full">
           <legend className="fieldset-legend text-sm">Refresh Token</legend>
           <textarea className="input w-full h-15 text-wrap" value={refreshToken} disabled />
+        </fieldset>
+
+        <fieldset className="fieldset w-full">
+          <legend className="fieldset-legend text-sm">Master password</legend>
+          <input 
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="input w-full" 
+            placeholder="Input your master password"
+            type="password"
+            required
+          />
         </fieldset>
 
         <button className="btn btn-primary w-full mt-4" onClick={handleActivateSync}>Activate sync with Dropbox</button>

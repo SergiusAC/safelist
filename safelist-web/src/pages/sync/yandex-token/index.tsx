@@ -3,13 +3,14 @@ import { syncService } from "@/services/sync-service";
 import { yandexDiskService, type YandexOAuthTokenResponse } from "@/services/sync-service/yandex-disk-service";
 import { localStorageService } from "@/storage/local-storage/localStorageService";
 import { cryptoUtils } from "@/utils/cryptoUtils";
+import { stringUtils } from "@/utils/stringUtils";
 import { nanoid } from "@reduxjs/toolkit";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface ActivateSyncParams {
   accessToken: string;
   expiresAt: number;
-  masterPassword: string;
   keySalt: ArrayBuffer;
   keyDigest: string;
 }
@@ -20,11 +21,6 @@ const _getTokenExpiresAt = (expiresIn: number) => {
 }
 
 const _getValidatedParamsForSyncActivation = (oauthResponse: YandexOAuthTokenResponse): ActivateSyncParams | null => {
-  const masterPassword = prompt("Input master password");
-  if (masterPassword === null || masterPassword.trim().length === 0) {
-    alert("Master password is empty");
-    return null;
-  }
   const keySalt = localStorageService.getSecretKeySalt();
   if (keySalt === null) {
     alert("Could not findsecret key salt in LocalStorage");
@@ -38,7 +34,6 @@ const _getValidatedParamsForSyncActivation = (oauthResponse: YandexOAuthTokenRes
   return {
     accessToken: oauthResponse.accessToken,
     expiresAt: _getTokenExpiresAt(oauthResponse.expiresIn),
-    masterPassword: masterPassword,
     keySalt: keySalt,
     keyDigest: keyDigest
   }
@@ -48,19 +43,24 @@ const YandexTokenPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const oauthResponse = yandexDiskService.parseOAuthTokenResponseUrl(location);
+  const [password, setPassword] = useState<string>();
 
   const handleActivateSync = async () => {
+    if (stringUtils.isBlank(password)) {
+      alert("Master password is empty");
+      return;
+    }
     const params = _getValidatedParamsForSyncActivation(oauthResponse);
     if (params === null) {
       return;
     }
     try {
-      const valid = await securityService.checkMasterPassword(params.masterPassword, params.keySalt, params.keyDigest);
+      const valid = await securityService.checkMasterPassword(password!.trim(), params.keySalt, params.keyDigest);
       if (!valid) {
         alert("Master password is incorrect");
         return;
       }
-      const key = await cryptoUtils.deriveSecretKey(params.masterPassword, params.keySalt);
+      const key = await cryptoUtils.deriveSecretKey(password!.trim(), params.keySalt);
       await syncService.putSyncWithYandexDisk(key, {
         id: nanoid(),
         token: params.accessToken,
@@ -88,9 +88,20 @@ const YandexTokenPage = () => {
       <div className="p-2 bg-gray-200 rounded">
         <fieldset className="fieldset w-full">
           <legend className="fieldset-legend text-sm">Token</legend>
-          <textarea className="input w-full h-15 text-wrap" value={oauthResponse.accessToken} />
-          <button className="btn btn-primary mt-2" onClick={handleActivateSync}>Activate</button>
+          <textarea className="input w-full h-15 text-wrap" value={oauthResponse.accessToken} disabled />
         </fieldset>
+        <fieldset className="fieldset w-full">
+          <legend className="fieldset-legend text-sm">Master password</legend>
+          <input 
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="input w-full" 
+            placeholder="Input your master password"
+            type="password"
+            required
+          />
+        </fieldset>
+        <button className="btn btn-primary mt-4 w-full" onClick={handleActivateSync}>Activate sync with Yandex Disk</button>
       </div>
     </div>
   </>
