@@ -2,3 +2,4 @@
 @plugin "daisyui" {
   themes: corporate --default;
 }
+@plugin "@tailwindcss/typography";

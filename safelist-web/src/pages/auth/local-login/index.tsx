@@ -55,14 +55,14 @@ const LocalLoginPage = () => {
         </fieldset>
         <div className="mr-2 w-full flex justify-between">
           <div className="mt-1">
-            <Link className="underline text-blue-900" to="/import">Import existing vault</Link>
+            <Link className="underline text-blue-900" to="/import">Import Vault</Link>
           </div>
           <div>
             <div className="mt-1">
-              <a className="underline text-blue-900" href="/terms/terms-of-usage" target="_blank">Terms of usage</a>
+              <Link className="underline text-blue-900" to="/terms/terms-of-use">Terms of Use</Link>
             </div>
             <div className="mt-1">
-              <a className="underline text-blue-900" href="/terms/privacy-policy" target="_blank">Privacy policy</a>
+              <Link className="underline text-blue-900" to="/terms/privacy-notice">Privacy Notice</Link>
             </div>
           </div>
         </div>

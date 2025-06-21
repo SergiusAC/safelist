@@ -54,7 +54,7 @@ const VaultPage = () => {
       <div className="navbar-start">
       </div>
       <div className="navbar-center">
-        <a className="btn btn-ghost text-2xl">Safelist</a>
+        <Link className="btn btn-ghost text-2xl" to="/">Safelist</Link>
       </div>
       <div className="navbar-end">
       </div>

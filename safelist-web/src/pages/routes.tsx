@@ -14,6 +14,8 @@ import YandexSyncPage from "./sync/yandex-sync";
 import YandexTokenPage from "./sync/yandex-token";
 import DropboxSyncPage from "./sync/dropbox-sync";
 import DropboxTokenPage from "./sync/dropbox-token";
+import TermOfUsePage from "./terms/terms-of-use";
+import PrivacyNoticePage from "./terms/privacy-notice";
 
 export const router = createBrowserRouter([
   {
@@ -80,6 +82,14 @@ export const router = createBrowserRouter([
         path: "/sync/dropbox-token",
         element: <DropboxTokenPage />
       },
+      {
+        path: "/terms/terms-of-use",
+        element: <TermOfUsePage />
+      },
+      {
+        path: "/terms/privacy-notice",
+        element: <PrivacyNoticePage />
+      }
     ],
   }
 ]);
