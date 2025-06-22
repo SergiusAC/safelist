@@ -4,4 +4,6 @@ Safelist is a browser-based secure note manager that allows users to manage encr
 
 ---
 
-**Documentation**: [docs](./docs/README.md)
+**Demo**: [https://safelist.website.yandexcloud.net/](https://safelist.website.yandexcloud.net/)  
+**Blog posts**: [Part 1](https://dev.to/sergiusac/secure-note-manager-in-react-part-1-cryptography-with-webcrypto-api-376)  
+**Documentation**: [docs](./docs/README.md)  
