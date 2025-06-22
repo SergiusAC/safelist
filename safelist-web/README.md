@@ -52,12 +52,3 @@ export default tseslint.config({
   },
 })
 ```
-
-LocalStorage:
-- vault_version
-- secreyKeyDigest
-- secretKeySalt
-
-IndexedDB:
-- notes
-- folders
